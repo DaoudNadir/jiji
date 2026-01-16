@@ -1,0 +1,203 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Just For Baka Jiji</title>
+<style>
+:root{
+  --bg1:#0b1020;
+  --bg2:#2a1640;
+  --accent1:#ff6ea6;
+  --accent2:#ffb3d6;
+  --glow: 0 0 30px rgba(255,110,166,0.45);
+  --heart-size: clamp(140px, 26vmin, 220px);
+}
+
+body{
+  margin:0; padding:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background: radial-gradient(circle at top, #1e003b, #45007d);
+  font-family:'Poppins',sans-serif;
+  overflow:hidden;
+}
+
+.container{
+  text-align:center;
+}
+
+.heart-wrap{
+  width:var(--heart-size);
+  height:var(--heart-size);
+  display:inline-block;
+  position:relative;
+  cursor:pointer;
+  transform: scale(0);
+  animation: entrance 800ms cubic-bezier(.17,.85,.45,1) forwards;
+}
+
+@keyframes entrance{
+  0%{ transform: scale(0.2) rotate(-10deg); opacity:0; }
+  60%{ transform: scale(1.05) rotate(-2deg); opacity:1; }
+  100%{ transform: scale(1) rotate(0deg); opacity:1; }
+}
+
+svg.heart{
+  width:100%;
+  height:100%;
+  transform-origin:center center;
+  filter: drop-shadow(var(--glow));
+}
+
+.beat{
+  animation: heartbeat 1400ms ease-in-out infinite;
+  transform-origin:center center;
+}
+
+@keyframes heartbeat{
+  0%{ transform: scale(1); }
+  30%{ transform: scale(1.08); }
+  50%{ transform: scale(0.98); }
+  100%{ transform: scale(1); }
+}
+
+.gradA { fill: url(#g1); }
+.gradB { fill: url(#g2); }
+
+.glow-ring{
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  pointer-events:none;
+  transform:scale(1.05);
+  opacity:0;
+  transition: opacity 300ms;
+  filter: blur(14px) saturate(140%);
+}
+
+.active .glow-ring{ opacity:0.35; }
+
+.name{
+  margin-top:20px;
+  font-family:'Playfair Display', serif;
+  font-size: clamp(28px, 4vw, 44px);
+  color: var(--accent1);
+  text-shadow:0 0 18px rgba(255,110,166,0.18);
+}
+
+.message{
+  max-width:600px;
+  margin:20px auto 0;
+  font-size:16px;
+  color:#ffd6ea;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  padding:12px 18px;
+  border-radius:12px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.45);
+  opacity:0;
+  transform:translateY(10px);
+  transition: opacity 420ms, transform 420ms;
+  text-align:center;
+}
+
+.message.show{
+  opacity:1;
+  transform:translateY(0);
+}
+
+.typing{
+  display:inline-block;
+  border-right:2px solid rgba(255,255,255,0.6);
+  padding-right:6px;
+  margin-left:4px;
+  animation: blink 900ms steps(1) infinite;
+}
+
+@keyframes blink{50%{border-color:transparent;}}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="heart-wrap" id="heartWrap" tabindex="0" role="button" aria-label="Click heart">
+    <svg class="heart" viewBox="0 0 100 100" aria-hidden="true">
+      <defs>
+        <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0%" stop-color="#ffb3d6"/>
+          <stop offset="100%" stop-color="#ff4d94"/>
+        </linearGradient>
+        <linearGradient id="g2" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0%" stop-color="#ffd6ea"/>
+          <stop offset="100%" stop-color="#ff6ea6"/>
+        </linearGradient>
+      </defs>
+      <g class="beat">
+        <path class="gradA" d="M50 85 C20 62 8 44 20 30 C32 16 50 26 50 26 C50 26 68 16 80 30 C92 44 80 62 50 85 Z"></path>
+        <path class="gradB" d="M50 80 C26 58 14 43 24 32 C34 20 50 28 50 28 C50 28 66 20 76 32 C86 43 74 58 50 80 Z" opacity="0.25"></path>
+      </g>
+    </svg>
+    <div class="glow-ring"></div>
+  </div>
+
+  <div class="name">Baka Jiji</div>
+  <div class="message" id="message"></div>
+</div>
+
+<script>
+const heartWrap = document.getElementById('heartWrap');
+const messageEl = document.getElementById('message');
+
+const fullText = "Baka Jiji, you are a beautiful soul. Your kindness, your smile, and the way you exist make the world feel softer. Never forget how special you truly are ✨";
+
+function typeText(target,text,speed=40){
+  target.textContent='';
+  let i=0;
+  const span = document.createElement('span');
+  span.className='typing';
+  target.appendChild(span);
+  function step(){
+    if(i<text.length){
+      span.insertAdjacentText('beforebegin',text[i]);
+      i++;
+      setTimeout(step,speed);
+    } else { span.remove(); }
+  }
+  step();
+}
+
+function playChime(){
+  try{
+    const audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    const now = audioCtx.currentTime;
+    const freqs=[440,660,880];
+    freqs.forEach((f,i)=>{
+      const osc = audioCtx.createOscillator();
+      osc.type='sine';
+      osc.frequency.value=f;
+      const env=audioCtx.createGain();
+      env.gain.setValueAtTime(0,now+i*0.08);
+      env.gain.linearRampToValueAtTime(1,now+i*0.08+0.02);
+      env.gain.exponentialRampToValueAtTime(0.001,now+i*0.08+0.9);
+      osc.connect(env); env.connect(audioCtx.destination);
+      osc.start(now+i*0.08);
+      osc.stop(now+i*0.08+1);
+    });
+  }catch(e){}
+}
+
+heartWrap.addEventListener('click',()=>{
+  heartWrap.classList.add('active');
+  playChime();
+  if(!messageEl.classList.contains('show')){
+    typeText(messageEl,fullText,45);
+    messageEl.classList.add('show');
+  }
+  setTimeout(()=>heartWrap.classList.remove('active'),900);
+});
+</script>
+</body>
+</html>
